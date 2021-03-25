@@ -1,0 +1,12 @@
+CREATE TABLE `price` (
+  `price_id` int(11) NOT NULL AUTO_INCREMENT,
+  `date` date NOT NULL,
+  `open` float NOT NULL,
+  `high` float NOT NULL,
+  `low` float NOT NULL,
+  `close` float NOT NULL,
+  `volume` float NOT NULL,
+  `ticker` tinytext NOT NULL,
+  `sector` text NOT NULL,
+  PRIMARY KEY (`price_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=4140463 DEFAULT CHARSET=latin1 COMMENT='latin1_swedish_ci' 

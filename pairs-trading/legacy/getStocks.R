@@ -1,0 +1,199 @@
+start="2010-12-26"
+stock_list<-c("GE","WFC","HBC","JPM","C","BAC","RY","LFC","TD","WBK","ITUB","SAN","AXP","BBD","USB","BNS","AVF",
+              "UNH","GS","MA","SMFG","BBVA","LYG","BCS","BLK","BMO","MET","DB","PNC","PUK","COF","MS","ING","CM","AFG",
+              "CS","BK","PRU","BEN","ACE","TRV","BBT","AFL","MFC","STT","CB","IBN","WLP","DFS","CME","MMC","ALL","SCHW",
+              "BX","NLY","AON","AV","L","TROW","SHG","STI","FITB","CI","NMR","KB","AET","CIB","BCH","PGR","AMP","HUM",
+              "MTB","NTRS","IVZ","RF","AEG","ICE","BAP","FIS","AMTD","HIG","KEY","CIT","SLM","CNA","XL","OAK","LNC","NYX",
+              "WSH","CINF","AMG","CMA","NYB","CEF","HBAN","UNM","RE","CVH","ACGL","WRB","RJF","TMK","FNF","MSCI","RGA",
+              "AJG","FRC","PBCT","NDAQ","BOKF","HCBK","RNR","ARCC","SEIC","CBOE","ZION","ACAS","LAZ","LM","OZM","CFR","OCN",
+              "KKR","HCC","GPN","EV","LPLA","VR","JEF","EWBC","SBNY","BR","AIZ","AGO","FNFG","CYN","GNW","AWH","PRA","WDR",
+              "SIVB","HBHC","KYN","NSM","ETFC","PB","DNP","ORI","FHN","BKU","ALTE","PL","CNO","ASBC","CACC","MBI","FII","BOH",
+              "MCY","FIG","FAF","AHL","ACG","ASPS","VLY","FULT","FAX","UMBF","SUSQ","WBS","PSEC","HNT","TCB","FMER","CFFN","SF",
+              "AFSI","APO","SNV","TCBI","PRI","KFN","BPOP","RATE","WAFD","JNS","CSE","THG","AINV","TRMK","FNB","CEM","SYA",
+              "UMPQ","CNS","BXS","GHL","NPBC","PTP","SFG","CATY","WTFC")
+spx<-as.data.frame(coredata(dailyReturn(getSymbols("^GSPC",auto.assign=FALSE,src="yahoo",verbose=FALSE,from=start))))
+
+stock_pickedF=c(stock_list[1])
+quote<-getSymbols(stock_list[1],auto.assign=FALSE,src="yahoo",verbose=FALSE,from=start)
+qret<-as.data.frame(coredata(dailyReturn(quote)))
+betaF<-c((cov(spx,qret)/var(spx))[1,1])
+dataF<-as.data.frame(coredata(Cl(quote)))
+
+dl<-dim(dataF)[1]
+for(j in 2:length(stock_list))
+{
+  quote<-getSymbols(stock_list[j],auto.assign=FALSE,src="yahoo",verbose=FALSE,from=start)
+  x<-as.data.frame(coredata(Cl(quote)))
+  if(dim(x)[1]==dl)
+  {
+    qret<-as.data.frame(coredata(dailyReturn(quote)))
+    beta<-(cov(spx,qret)/var(spx))[1,1]
+    dataF<-cbind(dataF,x)
+    betaF<-c(betaF,beta)
+    stock_pickedF<-c(stock_pickedF,stock_list[j])
+  }
+}
+
+stock_list<-c("AAPL","MSFT","IBM","GOOG","ORCL","INTC","QCOM","CSCO","SAP","TSM","EMC","HON","ABB","VMW","CAJ","BIDU","DHR",
+              "EMR","HPQ","TXN","ERIC","INFY","ASML","CRM","WIT","CTSH","BRCM","GLW","DELL","INTU","ETN","ADBE","TEL","KYO",
+              "CTXS","AMAT","MSI","SYMC","ATVI","A","NTAP","CA","TDC","CERN","LNKD","ARMH","CBE","ADI","STX","ALTR","RHT",
+              "SNDK","NOK","FISV","WDC","ROP","ROK","APH","CHKP","NJ","XRX","JNPR","CTRX","EQIX","XLNX","LPL","RAX","KLAC",
+              "AVGO","AME","GRMN","NVDA","MXIM","LLTC","NUAN","FFIV","VRSN","YNDX","WAT","ADSK","GIB","BMC","AKAM","ANSS",
+              "MCHP","MU","TRMB","NXPI","ASX","MRVL","SWKS","ILMN","DOX","HRS","MTD","STM","UMC","CSC","TIBX","SNPS","MOLX",
+              "VNTV","AVT","JBL","IACI","ARBA","ENR","MOLXA","PANW","FDS","EA","LSI","TSS","MLNX","SWI","FTNT","FLEX","SINA",
+              "SAI","MCRS","NOW","JAH","LRCX","CNQR","N","MR","ARW","INFA","RIMM","DNB","CDNS","NCR","MELI","SPIL","SPLK",
+              "PAY","RVBD","PKI","ATHN","OTEX","IPGP","JKHY","CREE","NATI","AUO","AOL","SLH","BIO","ONNN","BWC","TER","JDSU",
+              "AYI","PBI","BRCD","QIHU","CRUS","ATML","CAE","FIO","ALU","CLGX","ULTI","PMTC","WCC","AMD","SATS","CPHD","AOS",
+              "FSL","SYNT","ATE","LPS","CVLT","IM","DST","HXL","AZPN","CSGP","LORL","CPWR","DDD","DBD","ZNGA","BRKR","AXE",
+              "YOKU","FEIC","SPB","QLIK","ASMI","PANL","MDRX","NICE","AWAY","FSLR","MENT","PLCM","RP","SSNC","TECD","CY","ENS",
+              "HRC","FCS","MSCC","CVG","ITRI","CYMI","AVX","ACIW","BDC","HITT","VSAT","CAVM","SMTC","VSH","CLS","P","FIRE",
+              "CGNX","GWRE","ALR","SLAB","ARRS","LOGI","SOHU","PLT","LXK","ET","BGC","AIXG","FICO","GNRC","IDCC","SAPE","MKSI",
+              "OSIS","VHC","RENN","FNSR","MSTR","VECO","CIEN","CSOD","ACXM","CMVT","TLAB","CYOU","JDAS","GTI","FELE",
+              "SSYS","ACOM","SNX","INXN","APKT","PMCS","PRGS","ADTN","KNXA","IRF","TYL","CACI","ADVS","IIVI","KYAK","GA","TRAK",
+              "QLGC","LFUS","ISIL","UBNT","COHR","PLXS","RFMD","QSII","VRNT","BLKB","IART","PEGA","NTCT","XXIA","MANH",
+              "BSFT","SFUN","INVN","MDAS","POWI","ESE","EGOV","TTWO","LPSN","CCOI","MDSO","TQNT","TTEC","EZCH","SPRD","UIS",
+              "SYNA","SNCR","IGTE","IMOS","BHE","BLOX","EBIX","PROJ","JIVE","ASIA","SCSC","OVTI","TTMI","ALOG","AZZ","DIOD",
+              "DMD","UTEK","MTSC","ALLT","LMNX","EPAY","NSIT","MANT","WWWW","IDTI","DWRE","CCMP","ACCO","TSRA","EFII","AMKR",
+              "PRLB","SPWR","OPNT","THR","HSTM","IMPV","ELNK","EPAM","GTAT","SANM","WBMD","CODE","PWER","ACTV","WFR","CSGS",
+              "MPWR","RDWR","SREV","OYOG","ROG","FARO","VCRA","ELX","ELLI","BCOR","MCRL","ANGI","MG","ATMI","CTCT","AMAP",
+              "SYKE","VLTR","DRIV","WBSN","CPSI","AVG","ININ","LOGM","LDR","DSGX","ARX","PKE","HLIT","TYPE","SMCI","MFLX",
+              "SONS","ENTR","WNS","PWRD","TNGO","MX","PSMI","HOLI","BRKS","VELT","RMBS","ASEI","CALL","CMTL","BMI","MEAS",
+              "AEIS","MTSI","PRO","RTLX","RDA","LSCC","OMCL","MTRN","SIFY","EPIQ","MKTG","PGI","CRAY","NTE","SIMO","KBALB",
+              "POWL","ELOQ","PFPT","BBOX","GWAY","ACCL","PKT","VRTU","SCMR","SPSC","CASS","SIMG","FN","DAKT","VOCS","IN","QTM",
+              "MIPS","INAP","CEVA","ESIO","VDSI","ORBK","PRFT","MEI","PDFS","NANO","EXAR","AUTH","VIT","IQNT","HSFT","STEC",
+              "NQ","BIRT","AMCC","CTS","IPHI","EXTR","ZIGO","TSL","RTEC","MOVE","IL","FLDM","GLUU","MRGE","OPLK","IXYS","EXFO",
+              "VIAS","MRCY","OCZ","BCOV","GCOM","HIMX","ZOLT","XRTX","SGI","LTXC","TASR","ISS","DGII","ISSI","CALX","GUID",
+              "PLUS","IMI","YGE","NVEC","RST","FORM","PLXT","AFFX","SABA","VICR","SYMM","SEAC","GNMK","WIFI","SWIR","CBR",
+              "XIDE","KOPN","KEYN","CKSW","MXL","AOSL","AQ","SHOR","SAAS","EPOC","IRIS","CRNT","COHU","BELFB","AMSWA","SUPX",
+              "CAMP","QADA","TTGT","SIGM","RBCN","SYNC","AMSC","KEM","VRNG","PSEM","NVMI","PRKR","INTX","HWCC","SMT","AGYS",
+              "ENPH","RELL","CARB","VPG","DATE","VOXX","TSEM","KITD","MGIC","CALD","LDK","PMFG","ATNY","NPTN","ACFN","ZIXI",
+              "TESS","WRLS","SPRT","GILT","UPIP","DMRC","MLAB","IMMR","EXA","DTLK","OCLR","IVAC","UCTT")
+spx<-as.data.frame(coredata(dailyReturn(getSymbols("^GSPC",auto.assign=FALSE,src="yahoo",verbose=FALSE,from=start))))
+
+stock_pickedT=c(stock_list[1])
+quote<-getSymbols(stock_list[1],auto.assign=FALSE,src="yahoo",verbose=FALSE,from=start)
+qret<-as.data.frame(coredata(dailyReturn(quote)))
+betaT<-c((cov(spx,qret)/var(spx))[1,1])
+dataT<-as.data.frame(coredata(Cl(quote)))
+
+dl<-dim(dataT)[1]
+for(j in 2:length(stock_list))
+{
+  quote<-getSymbols(stock_list[j],auto.assign=FALSE,src="yahoo",verbose=FALSE,from=start)
+  x<-as.data.frame(coredata(Cl(quote)))
+  if(dim(x)[1]==dl)
+  {
+    qret<-as.data.frame(coredata(dailyReturn(quote)))
+    beta<-(cov(spx,qret)/var(spx))[1,1]
+    dataT<-cbind(dataT,x)
+    betaT<-c(betaT,beta)
+    stock_pickedT<-c(stock_pickedT,stock_list[j])
+  }
+}
+
+stock_list<-c("BHP","VALE","RIO","BBL","MON","DD","ABX","FCX","DOW","POT","GG","SYT","PX","SSL","SCCO","LYB","NEM","MOS","PKX","MT","PCP",
+              "TCK","APD","PPG","GGB","SQM","AGU","IP","SHW","WY","CF","AU","AUY","SLW","PH","NUE","DOV","EGO","GOLD","AA","BVN","GFI","SIAL",
+              "CCJ","SID","AEM","FMC","EMN","TRQ","PCL","BLL","ARG","CE","RYN","BAK","SLT","CLF","CCK","LUK","ACH","IAG","NGD","RGLD","MWV",
+              "VAL","ALB","IFF","RKT","WLK","GRA","RS","TNH","FBR","TX","HUN","ROC","ATI","HMY","ATR","NEU","CSL","ANV","OI","PKG","BMS",
+              "X","CYT","SON","SEE","MTL","SLGN","PAAS","CRS","MEOH","UFS","SMG","STLD","CBT","CMP","AG","CR","GPK","TIE","CDE","AWC","GEF",
+              "ATU","SMS","KRO","SHI","SXT","UAN","OLN","IPI","PDH","MLI","CHMT","PPO","HBM","RXN","CMC","FUL","AUQ","HL","WOR","CW","NG",
+              "POL","SWC","RFP","GGC","RNF","MCP","SSD","WTS","MTX","BKI","SSRI","GSM","MUX","KALU","RAVN","HWD","BCPC","IPHS","ROLL","GORO",
+              "RBY","SVM","SWM","KS","EXK","KAMN","BAA","CLW","LXU","AVD","NSU","TRS","MATW","CCC","BZ","WDFC","DEL","SCHN","NPO","UFPI",
+              "SA","AZK","KRA","KIOR","GLT","SHLM","KOP","KDN","IOSP","RTI","AIN","MWA","CENX","SNHY","HAYN","AKS","TPCG","MVG","CIR","TGB",
+              "OMG","EMO","GFF","WIRE","KWR","TC","NL","MUSA","TG","DNN","TREX","MYE","RTK","NEWP","NOR","TRX","NP","WPP","ZINC","FF","HWKN",
+              "GSS","OMN","AZC","PZG","PAL","MERC","FSIN","FSTR","NAK","EDG","FOE","PLPC","CAS","GPL","KGN","LNDC","GMO","SVLC","VGZ","USAP",
+              "ACET","THM","ZAGG","AUMN","AXU","ADES","ARSD","MCC","DRD","UEC","YONG","BOOM","KMG","GRZ","PLM","PLG","CXDC","REGI","AMRS",
+              "AVL","HNH","AP","SHLO","ZEUS","MDW","CCIX","AAU","UAMY","SEH","GSE","GPRE","XRA","CIX")
+spx<-as.data.frame(coredata(dailyReturn(getSymbols("^GSPC",auto.assign=FALSE,src="yahoo",verbose=FALSE,from=start))))
+
+stock_pickedBM=c(stock_list[1])
+quote<-getSymbols(stock_list[1],auto.assign=FALSE,src="yahoo",verbose=FALSE,from=start)
+qret<-as.data.frame(coredata(dailyReturn(quote)))
+betaBM<-c((cov(spx,qret)/var(spx))[1,1])
+dataBM<-as.data.frame(coredata(Cl(quote)))
+
+dl<-dim(dataBM)[1]
+for(j in 2:length(stock_list))
+{
+  quote<-getSymbols(stock_list[j],auto.assign=FALSE,src="yahoo",verbose=FALSE,from=start)
+  x<-as.data.frame(coredata(Cl(quote)))
+  if(dim(x)[1]==dl)
+  {
+    qret<-as.data.frame(coredata(dailyReturn(quote)))
+    beta<-(cov(spx,qret)/var(spx))[1,1]
+    dataBM<-cbind(dataBM,x)
+    betaBM<-c(betaBM,beta)
+    stock_pickedBM<-c(stock_pickedBM,stock_list[j])
+  }
+}
+
+stock_list<-c("UTX","MMM","CAT","BA","DE","LMT","TS","GD","RTN","CMI","NOC","CRH","IR","FAST","KUB","CNH","FLR","CX","COL","TDG","LLL","FLS",
+              "PLL","DHI","LEN","PHM","VMC","TOL","ST","JEC","DCI","MAS","PWR","ERJ","XYL","MSM","KBR","PNR","AGCO","FBHS","BEAV","DRC","MLM",
+              "NDSN","TKR","JHX","CBI","SPR","VMI","LECO","EIX","SPW","CFX","KMT","GGG","FLIR","GDI","RBC","TGI","URS","SHAW","WSO","TEX","AWI",
+              "TRN","RBN","USG","VC","WWD","FWLT","TDY","ACM","LII","TTC","MIDD","GTLS","EXP","EME","ZBRA","LPX","SHS","ITT","XLS","HEI","MTW",
+              "AIT","ESL","THO","HSC","MDC","GRP","ATK","STN","MTZ","ESLT","BECN","SPF","MTH","B","CUB","RYL","CPAC","ENTG","WAIR","TXI","GVA",
+              "ICA","ACO","KBH","GFA","BGG","NC","LNN","ORB","TNC","SODA","SLCA","HXM","ASTE","BLT","AIR","NX","DXPE","DW","PRIM","RSTI","GY",
+              "CASC","GRC","FOR","HCLP","SXI","AMRC","TPC","NPK","AVAV","AIMC","DY","CYD","HOV","APOG","JBT","AAON","HW","GLDD","CSTE","MYRG",
+              "FIX","TITN","BZH","GIFI","ROCK","ALG","LAYN","MHO","ATRO","WGO","CVCO","GLPW","PIKE","CMCO","AMWD","ANEN","KTOS","KAI",
+              "NWPX","LMIA","LDL","BKR","NCS","TWIN","AGX","ORN","XIN","IIIN","GHM","PGTI","STRL","DCO","HURC","PATK","CECE","BXC","TGE",
+              "MPR","ERII","FTEK","HDNG","CVU","MNTX","SCX","HDSN","EDAC")
+spx<-as.data.frame(coredata(dailyReturn(getSymbols("^GSPC",auto.assign=FALSE,src="yahoo",verbose=FALSE,from=start))))
+
+stock_pickedCG=c(stock_list[1])
+quote<-getSymbols(stock_list[1],auto.assign=FALSE,src="yahoo",verbose=FALSE,from=start)
+qret<-as.data.frame(coredata(dailyReturn(quote)))
+betaCG<-c((cov(spx,qret)/var(spx))[1,1])
+dataCG<-as.data.frame(coredata(Cl(quote)))
+
+dl<-dim(dataCG)[1]
+for(j in 2:length(stock_list))
+{
+  quote<-getSymbols(stock_list[j],auto.assign=FALSE,src="yahoo",verbose=FALSE,from=start)
+  x<-as.data.frame(coredata(Cl(quote)))
+  if(dim(x)[1]==dl)
+  {
+    qret<-as.data.frame(coredata(dailyReturn(quote)))
+    beta<-(cov(spx,qret)/var(spx))[1,1]
+    dataCG<-cbind(dataCG,x)
+    betaCG<-c(betaCG,beta)
+    stock_pickedCG<-c(stock_pickedCG,stock_list[j])
+  }
+}
+
+stock_list<-c("XOM","PTR","CVX","PBR","BP","EC","TOT","SLB","CEO","STO","E","SNP","COP","OXY","SU","IMO","APC",
+              "CNQ","NOV","APA","HAL","EOG","PSX","CVE","DVN","WMB","MRO","BHI","SDRL","MPC","HES","VLO","RIG",
+              "NBL","ECA","PAA","TLM","CAM","CLR","NXY","PXD","CHK","ESV","SWN","FTI","RRC","MUR","CXO","WFT",
+              "MMP","COG","DO","NE","CIE","EQT","EEP","HFC","LINE","KMR","YZC","PWE","CNX","IHS","DNR","BTU","OII",
+              "CLB","TSO","BTE","WLL","QEP","YPF","ACMP","XEC","HP","SUN","CGV","PXP","SXL","BPL","KOS","OIS",
+              "CZZ","NFX","RDC","APU","RGP","NBR","NGLS","EGN","NS","IOC","STR","SD","PGH","LNG","UPL","SM","SPN",
+              "WPX","CVI","ERF","PVR","AHGP","ATW","DRQ","MDR","EXXI","LPI","GEL","RES","OAS","EVEP","INT","NRGY",
+              "ROSE","PTEN","TDW","KOG","WNR","NTI","ARLP","NRP","PDS","ORIG","BRY","PACD","FET","WLT","UNT","BPT",
+              "HLX","HEP","MMR","LUFK","BRS","APL","CLMT","ATLS","XCO","GPOR","SEMG","FGP","HK","VNR","CRR","ANR",
+              "OILT","DK","SPH","WTI","LGCY","GTE","NSH","ACI","BBEP","EROC","EXH","EEQ","SGY","BBG","CLNE","CLD",
+              "KEG","NOG","IO","CJES","CRZO","FST","XTEX","BCEI","PSE","EXLP","PDCE","SFY","PZE","CRK","QRE",
+              "MMLP","HERO","EPL","TGA","MCF","ALJ","MHR","VQ","SZYM","PBT","SDT","REXX","XTXI","SN","NR","CWEI",
+              "HEK","FTK","TLP","MPO","SUSP","PES","PKD","EGY","TTI","BAS","GDP","RNO","END","LRE","MEMP",
+              "TESO","PQ","FXEN","HNR","BPZ","VOC","ZAZA","TPLM","ANW","PVA","MTRX","WG","CPE","MILL")
+spx<-as.data.frame(coredata(dailyReturn(getSymbols("^GSPC",auto.assign=FALSE,src="yahoo",verbose=FALSE,from=start))))
+
+stock_pickedE=c(stock_list[1])
+quote<-getSymbols(stock_list[1],auto.assign=FALSE,src="yahoo",verbose=FALSE,from=start)
+qret<-as.data.frame(coredata(dailyReturn(quote)))
+betaE<-c((cov(spx,qret)/var(spx))[1,1])
+dataE<-as.data.frame(coredata(Cl(quote)))
+
+dl<-dim(dataE)[1]
+for(j in 2:length(stock_list))
+{
+  quote<-getSymbols(stock_list[j],auto.assign=FALSE,src="yahoo",verbose=FALSE,from=start)
+  x<-as.data.frame(coredata(Cl(quote)))
+  if(dim(x)[1]==dl)
+  {
+    qret<-as.data.frame(coredata(dailyReturn(quote)))
+    beta<-(cov(spx,qret)/var(spx))[1,1]
+    dataE<-cbind(dataE,x)
+    betaE<-c(betaE,beta)
+    stock_pickedE<-c(stock_pickedE,stock_list[j])
+  }
+}
+range<-(dl-130)

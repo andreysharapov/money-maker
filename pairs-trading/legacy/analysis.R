@@ -1,0 +1,62 @@
+i<-which(stock_pickedT=="ALTR")
+j<-which(stock_pickedT=="VRTU")
+xx<-seq(1:131);
+yy<-(150*dataT[1:dl,i]-360*dataT[1:dl,j]);
+acf(yy)
+pacf(yy)
+model<-arima(yy,c(1,0,0))
+plot(forecast(model,h=30))
+
+i<-which(stock_pickedT=="CYMI")
+j<-which(stock_pickedT=="WWWW")
+xx<-seq(1:131);
+yy<-(100*dataT[1:dl,i]-169*dataT[1:dl,j]);
+acf(yy)
+pacf(yy)
+model<-arima(yy,c(1,0,0))
+plot(forecast(model,h=30))
+
+i<-which(stock_pickedCG=="KAI")
+j<-which(stock_pickedCG=="ACO")
+xx<-seq(1:dl)
+yy<-(346*dataCG[1:dl,i]-400*dataCG[1:dl,j])
+acf(yy)
+pacf(yy)
+fit <- auto.arima(yy)
+model<-arima(yy,c(1,0,0))
+plot(forecast(model,h=30))
+
+i<-which(stock_pickedT=="CTS")
+j<-which(stock_pickedT=="HOLI")
+xx<-seq(1:dl)
+yy<-(1167*c(as.vector(dataT[1:dl,i]),8.36)-300*c(as.vector(dataT[1:dl,j]),9.88))
+acf(yy)
+pacf(yy)
+fit <- auto.arima(yy)
+model<-arima(yy,c(1,0,0))
+plot(forecast(model,h=30))
+
+i<-which(stock_pickedT=="WRLS")
+j<-which(stock_pickedT=="PLUS")
+xx<-seq(1:dl)
+yy<-(621*c(as.vector(dataT[1:dl,i]),9.55)-200*c(as.vector(dataT[1:dl,j]),38.74))
+acf(yy)
+pacf(yy)
+fit <- auto.arima(yy)
+model<-arima(yy,c(1,0,0))
+plot(forecast(model,h=30))
+
+regm <- ksvm(xx,yy)
+plot(xx,yy,type="l")
+lines(xx,predict(regm,xx),col="red")
+
+i<-which(stock_pickedT=="WRLS")
+j<-which(stock_pickedT=="PLUS")
+pair<-dataT[range:dl,j]
+plot(pair,type="l",col="red")
+par(new=TRUE)
+plot(ksmooth(seq(1:131),pair[], kernel = "normal", bandwidth = 5),type="l",xlab="",ylab="",col="red")
+par(new=TRUE)
+ghat <- npreg(pair~seq(1:131))
+plot(ghat,xlab="",ylab="")
+plot(predict(ghat),col="blue",type="l")
