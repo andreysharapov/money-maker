@@ -25,7 +25,7 @@ find_pairs <- function(df, past_days = 130, num_vars = 2, type="eigen", ecdet="n
           if((series[length(series)] > m + num_vars*v) || (series[length(series)] < m - num_vars*v)) {
             hl <- find_half_life(series)
             pairs[[counter]] <- list(stock_1 = stocks[i], stock_2 = stocks[j], series = series, upper = m + num_vars*v, 
-                                     lower = m - num_vars*v, coeff = johtest@V[1:2,1], correl = (cor(df[[stocks[i]]], df[[stocks[j]]])), hl = hl)
+                                     lower = m - num_vars*v, coeff = johtest@V[1:2,1], correl = (cor(df[[stocks[i]]], df[[stocks[j]]])), hl = hl, profit = 4*v)
             counter <- counter + 1
           }
         }
@@ -36,7 +36,7 @@ find_pairs <- function(df, past_days = 130, num_vars = 2, type="eigen", ecdet="n
   return(pairs)
 }
 
-plot_pair <- function(pair, time_index) {
+plot_pair <- function(pair, time_index, add_cut = FALSE, cut_date = Sys.Date()) {
   ts <- as.xts(x = data.frame(series=pair$series), order.by = time_index[(length(time_index) - length(pair$series) + 1):length(time_index)])
   g <- ggplot(ts, aes(x = Index, y = series)) + 
           geom_line() + 
@@ -44,10 +44,17 @@ plot_pair <- function(pair, time_index) {
           geom_hline(yintercept=pair$lower, linetype="dashed", color = "red") + 
           geom_hline(yintercept=(pair$lower + pair$upper)/2, linetype="dashed", color = "blue")
   
+  stock_1 <- paste0(str_split(pair$stock_1, "\\.")[[1]][1], '.', str_split(pair$stock_1, "\\.")[[1]][2])
+  stock_2 <- paste0(str_split(pair$stock_2, "\\.")[[1]][1], '.', str_split(pair$stock_2, "\\.")[[1]][2])
+  
   if(pair$coeff[2] > 0) {
-    g <- g + ggtitle(paste0(pair$stock_1, "+", round(abs(pair$coeff[2]), 2), " * ", pair$stock_2, "  corr = ", round(pair$correl, 2)))
+    g <- g + ggtitle(paste0(stock_1, "+", round(abs(pair$coeff[2]), 2), " * ", stock_2, "  corr = ", round(pair$correl, 2)))
   } else {
-    g <- g + ggtitle(paste0(pair$stock_1, "-", round(abs(pair$coeff[2]), 2), " * ", pair$stock_2, "  corr = ", round(pair$correl, 2)))
+    g <- g + ggtitle(paste0(stock_1, "-", round(abs(pair$coeff[2]), 2), " * ", stock_2, "  corr = ", round(pair$correl, 2)))
+  }
+  
+  if(add_cut) {
+    g <- g + geom_vline(xintercept=cut_date, color = "red")
   }
   print(g)
 }

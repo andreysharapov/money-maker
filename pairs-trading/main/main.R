@@ -7,6 +7,7 @@ library(rlist)
 library(bizdays)
 library(RQuantLib)
 library(mongolite)
+library(stringr)
 
 num_years <- 2
 today <- Sys.Date()
@@ -45,9 +46,21 @@ for(pair in pairs) {
   }
 }
 
+sel_pairs <- list()
+num_pairs <- 1
+for(pair in pairs) {
+  if(abs(pair$coeff[2]) < 5) {
+    sel_pairs[[num_pairs]] <- pair
+    num_pairs <- num_pairs + 1 
+  }
+}
+
+
 pairs_col = mongo(collection = "pairs", db = "strategy")
 for(pair in pairs) {
   pair$buy_date <- Sys.Date()
   pairs_col$insert(pair)
 }
+
+plot_pair(sel_pairs[[1]], time_index = index(get(sample(working_set, 1)))) 
 
