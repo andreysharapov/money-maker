@@ -8,6 +8,7 @@ library(bizdays)
 library(RQuantLib)
 library(mongolite)
 library(stringr)
+library(R.oo)
 
 pairs_col_review = mongo(collection = "pairs", db = "strategy")
 pairs_review <- pairs_col_review$find('{}')
@@ -37,7 +38,7 @@ for(ticker in working_set) {
   }
 }
 
-df <- extract_series(working_set = working_set, type = 'Close')
+df <- extract_series(working_set = working_set, type = 'Close', order.by = index(get(sample(working_set, 1))))
 dl = dim(df)[1]
 pairs <- list()
 counter <- 1
@@ -54,4 +55,37 @@ for(pair in pairs) {
 }
 dev.off() 
 
+##################################
+pair <- pairs[[23]]
+price.pair <- xts(df[, c(pair$stock_1, pair$stock_2)], order.by = index(get(sample(working_set, 1))))
+reg <- EstimateParametersJo(price.pair)
+str(reg)
+plot(reg$spread, type="l")
 
+params <- EstimateParametersHistoricallyJo(price.pair, period = 180)
+signal <- SimpleJo(params$spread, params$stddev)
+
+barplot(signal,col="blue",space = 0, border = "blue",xaxt="n",yaxt="n",xlab="",ylab="")
+par(new=TRUE)
+plot(params$spread)
+
+return.pairtrading <- Return(price.pair, lag(signal), lag(params$hedge.ratio))
+plot(100 * cumprod(1 + return.pairtrading))
+
+##############################
+
+
+price.pair <- xts(df[, c(pair$stock_1, pair$stock_2)], order.by = index(get(sample(working_set, 1))))
+reg <- EstimateParameters(price.pair)
+str(reg)
+plot(reg$spread, type="l")
+
+params <- EstimateParametersHistorically(price.pair, period = 180)
+signal <- Simple(params$spread, 0.05)
+
+barplot(signal,col="blue",space = 0, border = "blue",xaxt="n",yaxt="n",xlab="",ylab="")
+par(new=TRUE)
+plot(params$spread)
+
+return.pairtrading <- Return(price.pair, lag(signal), lag(params$hedge.ratio))
+plot(100 * cumprod(1 + return.pairtrading))

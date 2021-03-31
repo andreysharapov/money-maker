@@ -1,0 +1,11 @@
+#Cointegration.R
+export(EstimateParameters)
+export(EstimateParametersJo)
+export(EstimateParametersHistorically)
+export(EstimateParametersHistoricallyJo)
+export(IsStationary)
+#Trading.R
+export(Simple)
+export(SimpleJo)
+#PairTrading.R
+export(Return)

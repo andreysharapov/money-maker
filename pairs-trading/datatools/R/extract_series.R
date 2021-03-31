@@ -1,4 +1,4 @@
-extract_series <- function(working_set, type = 'Close') {
+extract_series <- function(working_set, type = 'Close', order.by) {
   
   df <- NULL
   for(i in 1:length(working_set)) {
@@ -19,5 +19,6 @@ extract_series <- function(working_set, type = 'Close') {
       throw('Unknown type')
     }
   }
+  df <- xts(df, order.by = order.by)
   return(df)
 }

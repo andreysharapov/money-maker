@@ -8,6 +8,7 @@ library(bizdays)
 library(RQuantLib)
 library(mongolite)
 library(stringr)
+library(PairTrading)
 
 num_years <- 2
 today <- Sys.Date()
@@ -36,7 +37,7 @@ for(ticker in working_set) {
   }
 }
 
-df <- extract_series(working_set = working_set, type = 'Close')
+df <- extract_series(working_set = working_set, type = 'Close', order.by = index(get(sample(working_set, 1))))
 pairs <- find_pairs(df, past_days = past_days)
 list.order(pairs, correl)
 

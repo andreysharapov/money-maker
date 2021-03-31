@@ -1,0 +1,14 @@
+ea6e0070ab56c9b4322c5d391bc8e77a *DESCRIPTION
+c320cd65195b9f4ccc0667707c875d21 *NAMESPACE
+44efd11ece6b6fd3ea0f8ca758277923 *R/Cointegration.R
+f65b27a7aa5e97e1e59cd161fd912573 *R/Examples/Example-1.R
+3b7af1ccdbde71f9faff559c63f4d060 *R/PairTrading.R
+e5d1e53ec7858ea6d45887b06ea62d25 *R/Signal.R
+f839228e8688d21f1136ad20146143f1 *data/stock.price.rda
+8f468f222915ff920a0c771a2a41205c *man/EstimateParameters.Rd
+8b2a638fae2b6cc449c153c142951b6e *man/EstimateParametersHistorically.Rd
+d5a327c3a76c34a73368b7ee347411c5 *man/IsStationary.Rd
+12475529f622571003d64e2bd0b13c8c *man/PairTrading-package.Rd
+e412fe7e7a5c05292597db98c1cd78ee *man/Return.Rd
+33013338a4d393e1e5858f123684f8d3 *man/Simple.Rd
+122aeeaf0a6f9a382ae6b585ace3a785 *man/stock.price.Rd
