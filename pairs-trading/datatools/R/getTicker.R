@@ -47,3 +47,18 @@ select_balanced <- function(pairs, lower = 0.02, upper = 50) {
   return(sel_pairs)
 }
 
+select_tradable <- function(pairs) {
+  sel_pairs <- list()
+  num_pairs <- 1
+  
+  for(pair in pairs) {
+    if(pair$tradable == 1) { 
+      sel_pairs[[num_pairs]] <- pair
+      num_pairs <- num_pairs + 1
+    }
+  }
+  
+  print(num_pairs)
+  
+  return(num_pairs)
+}

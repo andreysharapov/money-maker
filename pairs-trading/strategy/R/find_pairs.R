@@ -34,12 +34,14 @@ find_pairs <- function(df, period = 360, num_vars = 2, type="eigen", ecdet="none
           m = mean(series, na.rm=TRUE)
           v = sd(series, na.rm=TRUE)
           # check we it is outside of num_vars standard deviations. If so, it is worth trading
+          tradable = 0
           if((series[length(series)] > m + num_vars*v) || (series[length(series)] < m - num_vars*v)) {
-            hl <- find_half_life(series)
-            pairs[[counter]] <- list(stock_1 = stocks[i], stock_2 = stocks[j], series = series, upper = m + num_vars*v, 
-                                     lower = m - num_vars*v, coeff = johtest@V[1:2,1], correl = (cor(data_inp)), hl = hl, profit = 4*v)
-            counter <- counter + 1
+            tradable = 1
           }
+          hl <- find_half_life(series)
+          pairs[[counter]] <- list(stock_1 = stocks[i], stock_2 = stocks[j], series = series, upper = m + num_vars*v, 
+                                   lower = m - num_vars*v, coeff = johtest@V[1:2,1], correl = (cor(data_inp)), hl = hl, profit = 4*v, tradable=tradable)
+          counter <- counter + 1
         }
       }
     }
