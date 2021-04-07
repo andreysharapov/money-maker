@@ -52,7 +52,7 @@ prepare_backtest_result <- function(pairs, min_r=110, max_r=300, min_corr=0.7) {
   
   counter <- 1
   pair_returns <- list()
-  for(pair in sel_pairs_return) {
+  for(pair in pairs) {
     pair_returns[[counter]] <- as.numeric(pair$jo_returns$lcr)
     counter <- counter + 1
   }
@@ -60,7 +60,7 @@ prepare_backtest_result <- function(pairs, min_r=110, max_r=300, min_corr=0.7) {
   
   counter <- 1
   perc_failed <- list()
-  for(pair in sel_pairs_return) {
+  for(pair in pairs) {
     perc_failed[[counter]] <- as.numeric(pair$jo_returns$percent_failed)
     counter <- counter + 1
   }
@@ -68,7 +68,7 @@ prepare_backtest_result <- function(pairs, min_r=110, max_r=300, min_corr=0.7) {
   
   counter <- 1
   correl <- list()
-  for(pair in sel_pairs_return) {
+  for(pair in pairs) {
     correl[[counter]] <- as.numeric(pair$correl[1,2])
     counter <- counter + 1
   }

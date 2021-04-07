@@ -58,7 +58,7 @@ select_tradable <- function(pairs) {
     }
   }
   
-  print(num_pairs)
+  print(num_pairs-1)
   
-  return(num_pairs)
+  return(sel_pairs)
 }

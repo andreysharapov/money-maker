@@ -25,14 +25,22 @@ getSymbols(working_set, from = start_date)
 working_set <- clean_tickers(working_set)
 df <- extract_series(working_set = working_set, type = 'Close', order.by = index(get(sample(working_set, 1))))
 pairs <- find_pairs(df, period = period)
+triples <- find_triples(df, period = period)
 balanced_pairs <- select_balanced(pairs)
 sel_pairs_return <- backtest(pairs = balanced_pairs, order.by = index(get(sample(working_set, 1))), period = period)
 bt_df <- prepare_backtest_result(pairs=sel_pairs_return, min_r=110, max_r=300, min_corr=0.7)
 
 sel_pairs_return_tradable <- select_tradable(sel_pairs_return)
-bt_df_tradable <- prepare_backtest_result(pairs=sel_pairs_return_tradable, min_r=110, max_r=300, min_corr=0.7)
+bt_df_tradable <- prepare_backtest_result(pairs=sel_pairs_return_tradable, min_r=0, max_r=10000, min_corr=0.7)
 
 ###########################
-pair_index <- 318
+pair_index <- 423
 plot_pair(sel_pairs_return[[pair_index]], time_index = index(get(sample(working_set, 1))))
 plot(as.data.frame(df)[[sel_pairs_return[[pair_index]]$stock_1]] + sel_pairs_return[[pair_index]]$coeff[2]*as.data.frame(df)[[sel_pairs_return[[pair_index]]$stock_2]], type="l")
+
+###########################
+pair_index <- 21
+plot_pair(sel_pairs_return_tradable[[pair_index]], time_index = index(get(sample(working_set, 1))))
+plot(as.data.frame(df)[[sel_pairs_return_tradable[[pair_index]]$stock_1]] + sel_pairs_return_tradable[[pair_index]]$coeff[2]*as.data.frame(df)[[sel_pairs_return_tradable[[pair_index]]$stock_2]], type="l")
+
+### bought 4, 1, 21

@@ -19,9 +19,9 @@ find_pairs <- function(df, period = 360, num_vars = 2, type="eigen", ecdet="none
         johtest <- tryCatch({
           ca.jo(data_inp,type=type,ecdet=ecdet,K=K,spec=spec)
         }, error = function(x) {
-          return(NA)
+          return(NULL)
         })
-        if(is.na(johtest)) {
+        if(is.null(johtest)) {
           next
         }
         # look only at r=0 case to make sure a single relationship exists. That's why < in r1 and > in r0
@@ -40,7 +40,7 @@ find_pairs <- function(df, period = 360, num_vars = 2, type="eigen", ecdet="none
           }
           hl <- find_half_life(series)
           pairs[[counter]] <- list(stock_1 = stocks[i], stock_2 = stocks[j], series = series, upper = m + num_vars*v, 
-                                   lower = m - num_vars*v, coeff = johtest@V[1:2,1], correl = (cor(data_inp)), hl = hl, profit = 4*v, tradable=tradable)
+                                   lower = m - num_vars*v, coeff = johtest@V[1:2,1], correl = (cor(data_inp)), hl = hl, profit = num_vars*v, tradable=tradable)
           counter <- counter + 1
         }
       }
