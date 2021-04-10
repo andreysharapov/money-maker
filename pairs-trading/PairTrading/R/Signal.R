@@ -5,10 +5,10 @@ Simple <- function(spread, spread.entry)
   return(na.locf(signal))
 }
 
-SimpleJo <- function(spread, stdev)
+SimpleJo <- function(spread, stdev, m)
 {
-  signal <- ifelse(spread <= -2*stdev, 1, NA)
-  signal <- ifelse(spread >= 2*stdev, -1, signal)
+  signal <- ifelse(spread <= m - 2*stdev, 1, NA)
+  signal <- ifelse(spread >= m + 2*stdev, -1, signal)
   return(na.locf(signal))
 }
 

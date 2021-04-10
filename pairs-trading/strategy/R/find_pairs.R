@@ -1,4 +1,4 @@
-find_pairs <- function(df, period = 360, num_vars = 2, type="eigen", ecdet="none", K=2, spec="longrun") {
+find_pairs <- function(df, period = 360, num_vars = 2, type="eigen", ecdet="none", K=2, spec="longrun", confidence=1) {
   
   stocks <- names(df)
   dl = dim(df)[1]
@@ -24,9 +24,19 @@ find_pairs <- function(df, period = 360, num_vars = 2, type="eigen", ecdet="none
         if(is.null(johtest)) {
           next
         }
+        test_stat_col <- 3
+        if(confidence ==1) {
+          test_stat_col <- 3
+        } else if(confidence ==5) {
+          test_stat_col <- 2
+        } else if(confidence ==10) {
+          test_stat_col <- 1
+        } else {
+          throw("Unknown confidence. Only 1,5,10 are allowed")
+        }
         # look only at r=0 case to make sure a single relationship exists. That's why < in r1 and > in r0
-        test_r1 = (johtest@teststat[1] < johtest@cval[1,3])
-        test_r0 = (johtest@teststat[2] > johtest@cval[2,3]) 
+        test_r1 = (johtest@teststat[1] < johtest@cval[1,test_stat_col])
+        test_r0 = (johtest@teststat[2] > johtest@cval[2,test_stat_col]) 
         if(test_r1 && test_r0) {
           #print("Detected")
           series <- as.data.frame(df[(dl-period + 1):dl,i])+johtest@V[2,1]*as.data.frame(df[(dl-period +1):dl,j]) # multiply by the first eigenvector, since it corresponds to the highest eigenvalue. it is always 1 and x

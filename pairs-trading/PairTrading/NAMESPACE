@@ -1,11 +1,15 @@
 #Cointegration.R
 export(EstimateParameters)
 export(EstimateParametersJo)
+export(EstimateParametersTripleJo)
 export(EstimateParametersHistorically)
 export(EstimateParametersHistoricallyJo)
+export(EstimateParametersHistoricallyTripleJo)
 export(IsStationary)
 #Trading.R
 export(Simple)
 export(SimpleJo)
 #PairTrading.R
 export(Return)
+export(ReturnJo)
+export(ReturnTripleJo)

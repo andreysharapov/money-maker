@@ -1,15 +1,30 @@
-backtest_pairs_jo <- function(pair, ordering, period = 360) {
+backtest_pairs_jo <- function(pair, ordering, confidence, period = 360) {
   
   price.pair <- xts(df[, c(pair$stock_1, pair$stock_2)], order.by = ordering)
-  reg <- EstimateParametersJo(price.pair)
+  reg <- EstimateParametersJo(price.pair, confidence)
   
-  params <- EstimateParametersHistoricallyJo(price.pair, period = period)
+  params <- EstimateParametersHistoricallyJo(price.pair, period = period, confidence = confidence)
   num_failures <- sum(params$failed, na.rm = TRUE)
   total_tests <- dim(params)[1] - period + 1
-  signal <- SimpleJo(params$spread, params$stddev)
+  signal <- SimpleJo(params$spread, params$stddev, params$m)
   
-  return.pairtrading <- Return(price.pair, lag(signal), lag(params$hedge.ratio))
+  return.pairtrading <- ReturnJo(price.pair, lag(signal), lag(params$hedge.ratio))
   cum_return <- 100 * cumprod(1 + return.pairtrading)
+  return(list(cum_return = cum_return, lcr = last(cum_return),  percent_failed = 100.0*num_failures/total_tests))
+}
+
+backtest_triples_jo <- function(pair, ordering, confidence, period = 360) {
+  
+  price.triple <- xts(df[, c(pair$stock_1, pair$stock_2, pair$stock_3)], order.by = ordering)
+  reg <- EstimateParametersTripleJo(price.triple, confidence)
+  
+  params <- EstimateParametersHistoricallyTripleJo(price.triple, period = period, confidence = confidence)
+  num_failures <- sum(params$failed, na.rm = TRUE)
+  total_tests <- dim(params)[1] - period + 1
+  signal <- SimpleJo(params$spread, params$stddev, params$m)
+  
+  return.tripletrading <- ReturnTripleJo(price.triple, lag(signal), lag(params$hedge.ratio_1), lag(params$hedge.ratio_2))
+  cum_return <- 100 * cumprod(1 + return.tripletrading)
   return(list(cum_return = cum_return, lcr = last(cum_return),  percent_failed = 100.0*num_failures/total_tests))
 }
 
@@ -26,27 +41,52 @@ backtest_pairs <- function(pair, ordering, period = 360) {
   return(list(cum_return = cum_return, lcr = last(cum_return)))
 }
 
-backtest <- function(pairs, order.by, period) {
-  
-  sel_pairs_return <- list()
-  counter <- 1
-  for(pair in pairs) {
-    result <- tryCatch({
-      jo_returns <- backtest_pairs_jo(pair = pair, ordering = order.by, period = period)
-      reg_returns <- backtest_pairs(pair = pair, ordering = order.by, period = period)
-      list(jo_returns = jo_returns, reg_returns = reg_returns)
-    }, error = function(x) {
-      return(NA)
-    })
-    if(!is.na(result)) {
-      pair$jo_returns <- result$jo_returns
-      pair$reg_returns <- result$reg_returns
-      sel_pairs_return[[counter]] <- pair
-      counter <- counter + 1  
+backtest <- function(pairs, order.by, period, confidence, backtest_type) {
+
+  if(backtest_type == "pair") {
+    sel_pairs_return <- list()
+    counter <- 1
+    for(pair in pairs) {
+      result <- tryCatch({
+        jo_returns <- backtest_pairs_jo(pair = pair, ordering = order.by, period = period, confidence = confidence)
+        #reg_returns <- backtest_pairs(pair = pair, ordering = order.by, period = period)
+        list(jo_returns = jo_returns)
+      }, error = function(x) {
+        return(NULL)
+      })
+      if(!is.null(result)) {
+        pair$jo_returns <- result$jo_returns
+        pair$reg_returns <- NULL
+        sel_pairs_return[[counter]] <- pair
+        counter <- counter + 1  
+      }
     }
+    return(sel_pairs_return)    
+  } else if(backtest_type == "triple") {
+    sel_pairs_return <- list()
+    counter <- 1
+    for(pair in pairs) {
+      result <- tryCatch({
+        jo_returns <- backtest_triples_jo(pair = pair, ordering = order.by, period = period, confidence = confidence)
+        #reg_returns <- backtest_pairs(pair = pair, ordering = order.by, period = period)
+        list(jo_returns = jo_returns)
+      }, error = function(x) {
+        return(NULL)
+      })
+      if(!is.null(result)) {
+        pair$jo_returns <- result$jo_returns
+        pair$reg_returns <- NULL
+        sel_pairs_return[[counter]] <- pair
+        counter <- counter + 1  
+      }
+    }
+    return(sel_pairs_return)
+  } else {
+    throw("Unknown backtest type")
   }
-  return(sel_pairs_return)
+
 }
+
 
 prepare_backtest_result <- function(pairs, min_r=110, max_r=300, min_corr=0.7) {
   
@@ -75,7 +115,34 @@ prepare_backtest_result <- function(pairs, min_r=110, max_r=300, min_corr=0.7) {
   correl <- unlist(correl, use.names = FALSE)
   
   returns_failed <- data.frame(pair_returns = pair_returns, perc_failed = perc_failed, correl = correl)
+  row.names(returns_failed) <- NULL
   
   return(returns_failed[((returns_failed$pair_returns > min_r) & (abs(returns_failed$correl) > min_corr) & (returns_failed$pair_returns < max_r)),])
+  
+}
+
+prepare_backtest_triple_result <- function(pairs, min_r=110, max_r=300) {
+  
+  counter <- 1
+  pair_returns <- list()
+  for(pair in pairs) {
+    pair_returns[[counter]] <- as.numeric(pair$jo_returns$lcr)
+    counter <- counter + 1
+  }
+  pair_returns <- unlist(pair_returns, use.names = FALSE)
+  
+  counter <- 1
+  perc_failed <- list()
+  for(pair in pairs) {
+    perc_failed[[counter]] <- as.numeric(pair$jo_returns$percent_failed)
+    counter <- counter + 1
+  }
+  perc_failed <- unlist(perc_failed, use.names = FALSE)
+  
+  
+  returns_failed <- data.frame(pair_returns = pair_returns, perc_failed = perc_failed)
+  row.names(returns_failed) <- NULL
+  
+  return(returns_failed[((returns_failed$pair_returns > min_r) & (returns_failed$pair_returns < max_r)),])
   
 }
