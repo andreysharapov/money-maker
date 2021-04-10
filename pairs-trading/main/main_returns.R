@@ -17,7 +17,8 @@ end_date <- today
 num_tickers <- 300
 exchange <- "ASX"
 period <- 500
-confidence <- 5
+confidence_pair <- 5
+confidence_triple <- 1
 
 
 tickers <- getTicker(exchange=exchange)
@@ -31,23 +32,20 @@ if(length(bad_ones) > 1) {
 
 df <- extract_series(working_set = working_set, type = 'Close', order.by = index(get(sample(working_set, 1))))
 any(is.na(df) | is.infinite(df) | is.null(df))
-pairs <- find_pairs(df, period = period, confidence = confidence)
-triples <- find_triples(df, period = period, confidence = 1)
+pairs <- find_pairs(df, period = period, confidence = confidence_pair)
+triples <- find_triples(df, period = period, confidence = confidence_triple)
 
 balanced_pairs <- select_balanced(pairs) # select pairs that do not have very large or very small coefficients
 balanced_triples <- select_balanced_triples(triples); sel_triples_tradable <- select_tradable(balanced_triples)
 
-sel_pairs_return <- backtest(pairs = balanced_pairs, order.by = index(get(sample(working_set, 1))), period = period, confidence = confidence, backtest_type = "pair")
+sel_pairs_return <- backtest(pairs = balanced_pairs, order.by = index(get(sample(working_set, 1))), period = period, confidence = confidence_pair, backtest_type = "pair")
 bt_df <- prepare_backtest_result(pairs=sel_pairs_return, min_r=110, max_r=300, min_corr=0.5)
 
-#sel_pairs_return_test_bt <- backtest(pairs = test_bt, order.by = index(get(sample(working_set, 1))), period = period, confidence = confidence, backtest_type = "triple")
-#bt_df_triple_tradable_test <- prepare_backtest_triple_result(pairs=sel_pairs_return_test_bt, min_r=0, max_r=300)
-
-sel_triples_return <- backtest(pairs = sel_triples_tradable, order.by = index(get(sample(working_set, 1))), period = period, confidence = confidence, backtest_type = "triple")
+sel_triples_return <- backtest(pairs = sel_triples_tradable, order.by = index(get(sample(working_set, 1))), period = period, confidence = confidence_triple, backtest_type = "triple")
 bt_df_triple_tradable <- prepare_backtest_triple_result(pairs=sel_triples_return, min_r=110, max_r=3000)
 
 sel_pairs_return_tradable <- select_tradable(sel_pairs_return)
-bt_df_tradable <- prepare_backtest_result(pairs=sel_pairs_return_tradable, min_r=110, max_r=10000, min_corr=0.5)
+bt_df_tradable <- prepare_backtest_result(pairs=sel_pairs_return_tradable, min_r=110, max_r=3000, min_corr=0.5)
 
 ########################### all
 pair_index <- 408
@@ -58,6 +56,13 @@ plot(as.data.frame(df)[[sel_pairs_return[[pair_index]]$stock_1]] + sel_pairs_ret
 pair_index <- 42
 plot_pair(sel_pairs_return_tradable[[pair_index]], time_index = index(get(sample(working_set, 1))))
 plot(as.data.frame(df)[[sel_pairs_return_tradable[[pair_index]]$stock_1]] + sel_pairs_return_tradable[[pair_index]]$coeff[2]*as.data.frame(df)[[sel_pairs_return_tradable[[pair_index]]$stock_2]], type="l")
+
+########################### tradable triples
+pair_index <- 4863
+plot_triple(sel_triples_return[[pair_index]], time_index = index(get(sample(working_set, 1))))
+plot(as.data.frame(df)[[sel_triples_return[[pair_index]]$stock_1]] + 
+       sel_triples_return[[pair_index]]$coeff[2]*as.data.frame(df)[[sel_triples_return[[pair_index]]$stock_2]] + 
+       sel_triples_return[[pair_index]]$coeff[3]*as.data.frame(df)[[sel_triples_return[[pair_index]]$stock_3]], type="l")
 
 ### bought GOZ.AX.Close CMW.AX.Close
 ### bought DXS.AX.Close CWN.AX.Close
@@ -82,8 +87,4 @@ plot_pair(found_pair, time_index = index(get(sample(working_set, 1))))
 plot(as.data.frame(df)[[found_pair$stock_1]] + found_pair$coeff[2]*as.data.frame(df)[[found_pair$stock_2]], type="l")
 
 ###############################################
-pair_index <- 4863
-plot_triple(sel_triples_return[[pair_index]], time_index = index(get(sample(working_set, 1))))
-plot(as.data.frame(df)[[sel_triples_return[[pair_index]]$stock_1]] + 
-       sel_triples_return[[pair_index]]$coeff[2]*as.data.frame(df)[[sel_triples_return[[pair_index]]$stock_2]] + 
-       sel_triples_return[[pair_index]]$coeff[3]*as.data.frame(df)[[sel_triples_return[[pair_index]]$stock_3]], type="l")
+
