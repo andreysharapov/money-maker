@@ -19,6 +19,9 @@ exchange <- "ASX"
 period <- 500
 confidence_pair <- 5
 confidence_triple <- 1
+bbsw <- 0.0649 + 0.025 # bbsw + 2.5%
+margin_rate <- 0.1
+commission_rate <- 0.018
 
 
 tickers <- getTicker(exchange=exchange)
@@ -42,7 +45,7 @@ sel_pairs_return <- backtest(pairs = balanced_pairs, order.by = index(get(sample
 bt_df <- prepare_backtest_result(pairs=sel_pairs_return, min_r=110, max_r=300, min_corr=0.5)
 
 sel_triples_return <- backtest(pairs = sel_triples_tradable, order.by = index(get(sample(working_set, 1))), period = period, confidence = confidence_triple, backtest_type = "triple")
-bt_df_triple_tradable <- prepare_backtest_triple_result(pairs=sel_triples_return, min_r=110, max_r=3000)
+bt_df_triple_tradable <- prepare_backtest_triple_result(triples=sel_triples_return, min_r=110, max_r=3000)
 
 sel_pairs_return_tradable <- select_tradable(sel_pairs_return)
 bt_df_tradable <- prepare_backtest_result(pairs=sel_pairs_return_tradable, min_r=110, max_r=3000, min_corr=0.5)
@@ -53,12 +56,12 @@ plot_pair(sel_pairs_return[[pair_index]], time_index = index(get(sample(working_
 plot(as.data.frame(df)[[sel_pairs_return[[pair_index]]$stock_1]] + sel_pairs_return[[pair_index]]$coeff[2]*as.data.frame(df)[[sel_pairs_return[[pair_index]]$stock_2]], type="l")
 
 ########################### tradable
-pair_index <- 42
+pair_index <- 11
 plot_pair(sel_pairs_return_tradable[[pair_index]], time_index = index(get(sample(working_set, 1))))
 plot(as.data.frame(df)[[sel_pairs_return_tradable[[pair_index]]$stock_1]] + sel_pairs_return_tradable[[pair_index]]$coeff[2]*as.data.frame(df)[[sel_pairs_return_tradable[[pair_index]]$stock_2]], type="l")
 
 ########################### tradable triples
-pair_index <- 4863
+pair_index <- 1
 plot_triple(sel_triples_return[[pair_index]], time_index = index(get(sample(working_set, 1))))
 plot(as.data.frame(df)[[sel_triples_return[[pair_index]]$stock_1]] + 
        sel_triples_return[[pair_index]]$coeff[2]*as.data.frame(df)[[sel_triples_return[[pair_index]]$stock_2]] + 
@@ -86,5 +89,21 @@ is.null(found_pair)
 plot_pair(found_pair, time_index = index(get(sample(working_set, 1))))
 plot(as.data.frame(df)[[found_pair$stock_1]] + found_pair$coeff[2]*as.data.frame(df)[[found_pair$stock_2]], type="l")
 
+found_pair <- find_by_name(pairs = pairs, stock_1 = "TPG.AX.Close", stock_2 = "FLT.AX.Close")
+is.null(found_pair)
+plot_pair(found_pair, time_index = index(get(sample(working_set, 1))))
+plot(as.data.frame(df)[[found_pair$stock_1]] + found_pair$coeff[2]*as.data.frame(df)[[found_pair$stock_2]], type="l")
+
+found_pair <- find_by_name(pairs = pairs, stock_1 = "CWN.AX.Close", stock_2 = "VCX.AX.Close")
+is.null(found_pair)
+plot_pair(found_pair, time_index = index(get(sample(working_set, 1))))
+plot(as.data.frame(df)[[found_pair$stock_1]] + found_pair$coeff[2]*as.data.frame(df)[[found_pair$stock_2]], type="l")
+
+found_triple <- find_by_triple_name(triples = triples, stock_1 = "CBA.AX.Close", stock_2 = "TLS.AX.Close", stock_3 = "SEK.AX.Close")
+is.null(found_triple)
+plot_triple(found_triple, time_index = index(get(sample(working_set, 1))))
+plot(as.data.frame(df)[[found_triple$stock_1]] + 
+       found_triple$coeff[2]*as.data.frame(df)[[found_triple$stock_2]] + 
+       found_triple$coeff[3]*as.data.frame(df)[[found_triple$stock_3]], type="l")
 ###############################################
 

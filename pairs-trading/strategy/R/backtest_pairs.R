@@ -114,18 +114,42 @@ prepare_backtest_result <- function(pairs, min_r=110, max_r=300, min_corr=0.7) {
   }
   correl <- unlist(correl, use.names = FALSE)
   
-  returns_failed <- data.frame(pair_returns = pair_returns, perc_failed = perc_failed, correl = correl)
+  counter <- 1
+  pair_profit <- list()
+  for(pair in pairs) {
+    pair_profit[[counter]] <- pair$profit
+    counter <- counter + 1
+  }
+  pair_profit <- unlist(pair_profit, use.names = FALSE)
+  
+  counter <- 1
+  pair_hl <- list()
+  for(pair in pairs) {
+    pair_hl[[counter]] <- pair$hl
+    counter <- counter + 1
+  }
+  pair_hl <- unlist(pair_hl, use.names = FALSE)
+  
+  counter <- 1
+  pair_margin <- list()
+  for(pair in pairs) {
+    pair_margin[[counter]] <- pair$margin
+    counter <- counter + 1
+  }
+  pair_margin <- unlist(pair_margin, use.names = FALSE)
+  
+  returns_failed <- data.frame(pair_returns = pair_returns, perc_failed = perc_failed, correl = correl, pair_profit = pair_profit, pair_hl = pair_hl, pair_margin = pair_margin)
   row.names(returns_failed) <- NULL
   
   return(returns_failed[((returns_failed$pair_returns > min_r) & (abs(returns_failed$correl) > min_corr) & (returns_failed$pair_returns < max_r)),])
   
 }
 
-prepare_backtest_triple_result <- function(pairs, min_r=110, max_r=300) {
+prepare_backtest_triple_result <- function(triples, min_r=110, max_r=300) {
   
   counter <- 1
   pair_returns <- list()
-  for(pair in pairs) {
+  for(pair in triples) {
     pair_returns[[counter]] <- as.numeric(pair$jo_returns$lcr)
     counter <- counter + 1
   }
@@ -133,14 +157,37 @@ prepare_backtest_triple_result <- function(pairs, min_r=110, max_r=300) {
   
   counter <- 1
   perc_failed <- list()
-  for(pair in pairs) {
+  for(pair in triples) {
     perc_failed[[counter]] <- as.numeric(pair$jo_returns$percent_failed)
     counter <- counter + 1
   }
   perc_failed <- unlist(perc_failed, use.names = FALSE)
   
+  counter <- 1
+  triple_profit <- list()
+  for(triple in triples) {
+    triple_profit[[counter]] <- triple$profit
+    counter <- counter + 1
+  }
+  triple_profit <- unlist(triple_profit, use.names = FALSE)
   
-  returns_failed <- data.frame(pair_returns = pair_returns, perc_failed = perc_failed)
+  counter <- 1
+  triple_hl <- list()
+  for(triple in triples) {
+    triple_hl[[counter]] <- triple$hl
+    counter <- counter + 1
+  }
+  triple_hl <- unlist(triple_hl, use.names = FALSE)
+  
+  counter <- 1
+  triple_margin <- list()
+  for(triple in triples) {
+    triple_margin[[counter]] <- triple$margin
+    counter <- counter + 1
+  }
+  triple_margin <- unlist(triple_margin, use.names = FALSE)
+  
+  returns_failed <- data.frame(pair_returns = pair_returns, perc_failed = perc_failed, triple_profit = triple_profit, triple_hl = triple_hl, triple_margin = triple_margin)
   row.names(returns_failed) <- NULL
   
   return(returns_failed[((returns_failed$pair_returns > min_r) & (returns_failed$pair_returns < max_r)),])

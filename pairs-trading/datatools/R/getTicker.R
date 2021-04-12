@@ -100,3 +100,12 @@ find_by_name <- function(pairs, stock_1, stock_2) {
   }
   return(NULL)
 }
+
+find_by_triple_name <- function(triples, stock_1, stock_2, stock_3) {
+  for(triple in triples) {
+    if((triple$stock_1 == stock_1 && triple$stock_2 == stock_2 && triple$stock_3 == stock_3)) {
+      return(triple)
+    }
+  }
+  return(NULL)
+}

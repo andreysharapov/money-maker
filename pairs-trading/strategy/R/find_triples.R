@@ -2,7 +2,7 @@
 # https://stats.stackexchange.com/questions/186208/johansen-test-for-cointegration
 # http://denizstij.blogspot.com/2013/11/cointegration-tests-adf-and-johansen.html
 # https://www.quantstart.com/articles/Johansen-Test-for-Cointegrating-Time-Series-Analysis-in-R/
-find_triples <- function(df, period = 360, num_vars = 2, type="eigen", ecdet="none", K=2, spec="longrun", confidence=1) {
+find_triples <- function(df, period = 360, num_vars = 2, type="eigen", ecdet="none", K=2, spec="longrun", confidence=1, volume = 100) {
   
   stocks <- names(df)
   dl = dim(df)[1]
@@ -42,6 +42,9 @@ find_triples <- function(df, period = 360, num_vars = 2, type="eigen", ecdet="no
           test_r0 = (johtest@teststat[3] > johtest@cval[3,test_stat_col]) 
           if(test_r2 && test_r1 && test_r0) {
             #print("Detected")
+            price_1 <- as.numeric(last(df[(dl-period + 1):dl,i]))
+            price_2 <- as.numeric(last(df[(dl-period + 1):dl,j]))
+            price_3 <- as.numeric(last(df[(dl-period + 1):dl,k]))
             series <- as.data.frame(df[(dl-period + 1):dl,i])+johtest@V[2,1]*as.data.frame(df[(dl-period +1):dl,j]) + johtest@V[3,1]*as.data.frame(df[(dl-period +1):dl,k]) # multiply by the first eigenvector, since it corresponds to the highest eigenvalue. it is always 1 and x
             series <- series[,1]
             m = mean(series, na.rm=TRUE)
@@ -52,8 +55,13 @@ find_triples <- function(df, period = 360, num_vars = 2, type="eigen", ecdet="no
               tradable = 1
             }
             hl <- find_half_life(series)
+            cost <- total_cost_triple(hl = hl, price_1 = price_1, price_2 = price_2, price_3 = price_3, 
+                                      coeff_1 = 1, coeff_2 = johtest@V[2,1], coeff_3 = johtest@V[3,1], volume = volume)
+            margin <- margin_triple(price_1 = price_1, price_2 = price_2, price_3 = price_3, 
+                                    coeff_1 = 1, coeff_2 = johtest@V[2,1], coeff_3 = johtest@V[3,1], volume = volume)
             pairs[[counter]] <- list(stock_1 = stocks[i], stock_2 = stocks[j], stock_3 = stocks[k], series = series, upper = m + num_vars*v, 
-                                     lower = m - num_vars*v, coeff = johtest@V[1:3,1], correl = (cor(data_inp)), hl = hl, profit = num_vars*v, tradable=tradable)
+                                     lower = m - num_vars*v, coeff = johtest@V[1:3,1], correl = (cor(data_inp)), hl = hl, 
+                                     profit = volume*num_vars*v - cost, tradable=tradable, cost = cost, margin = margin)
             counter <- counter + 1
           }
         }
@@ -96,6 +104,35 @@ plot_triple <- function(pair, time_index, add_cut = FALSE, cut_date = Sys.Date()
   print(g)
 }
 
+margin_triple <- function(price_1, price_2, price_3, coeff_1, coeff_2, coeff_3, volume = 100) {
+  volume_1 <- abs(coeff_1) * volume
+  volume_2 <- abs(coeff_2) * volume
+  volume_3 <- abs(coeff_3) * volume
+  margin <- price_1*volume_1*margin_rate + price_2*volume_2*margin_rate + price_3*volume_3*margin_rate
+  return(margin)
+}
+
+funding_triple <- function(hl, price_1, price_2, price_3, coeff_1, coeff_2, coeff_3, volume = 100) {
+  volume_1 <- abs(coeff_1) * volume
+  volume_2 <- abs(coeff_2) * volume
+  volume_3 <- abs(coeff_3) * volume
+  funding <- price_1*volume_1*bbsw*hl/360 + price_2*volume_2*bbsw*hl/360 + price_3*volume_3*bbsw*hl/360
+  return(funding)
+}
+
+commission_triple <- function(price_1, price_2, price_3, coeff_1, coeff_2, coeff_3, volume = 100) {
+  volume_1 <- abs(coeff_1) * volume
+  volume_2 <- abs(coeff_2) * volume
+  volume_3 <- abs(coeff_3) * volume
+  commission <-  2*price_1*volume_1*commission_rate + 2*price_2*volume_2*commission_rate + 2*price_3*volume_3*commission_rate# we do not know the sell price here so just double
+  return(commission)
+}
+
+total_cost_triple <- function(hl, price_1, price_2, price_3, coeff_1, coeff_2, coeff_3, volume = 100) {
+  cost <- funding_triple(hl, price_1, price_2, price_3, coeff_1, coeff_2, coeff_3, volume) + 
+    commission_triple(price_1, price_2, price_3, coeff_1, coeff_2, coeff_3, volume)
+  return(cost)
+}
 
 
 
