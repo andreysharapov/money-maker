@@ -10,6 +10,8 @@ library(mongolite)
 library(stringr)
 library(PairTrading)
 
+# https://www.marketindex.com.au/asx-listed-companies
+
 num_years <- 3
 today <- Sys.Date()
 start_date <- today - 365*num_years
@@ -25,9 +27,13 @@ commission_rate <- 0.018
 
 
 tickers <- getTicker(exchange=exchange)
+complete_set <- tickers[0:num_tickers]
 working_set <- tickers[0:num_tickers]
 getSymbols(working_set, from = start_date)
-working_set <- clean_tickers(working_set)
+working_set <- clean_tickers(complete_set)
+missing <- complete_set[is.na(pmatch(complete_set,working_set))]
+getSymbols(missing, from = start_date)
+working_set <- clean_tickers(complete_set)
 bad_ones <- refetch_bad_tickers(working_set)
 if(length(bad_ones) > 1) {
   getSymbols(bad_ones, from = start_date)  
@@ -45,7 +51,7 @@ sel_pairs_return <- backtest(pairs = balanced_pairs, order.by = index(get(sample
 bt_df <- prepare_backtest_result(pairs=sel_pairs_return, min_r=110, max_r=300, min_corr=0.5)
 
 sel_triples_return <- backtest(pairs = sel_triples_tradable, order.by = index(get(sample(working_set, 1))), period = period, confidence = confidence_triple, backtest_type = "triple")
-bt_df_triple_tradable <- prepare_backtest_triple_result(triples=sel_triples_return, min_r=110, max_r=3000)
+bt_df_triple_tradable <- prepare_backtest_triple_result(triples=sel_triples_return, min_r=110, max_r=3000, min_profit = 100)
 
 sel_pairs_return_tradable <- select_tradable(sel_pairs_return)
 bt_df_tradable <- prepare_backtest_result(pairs=sel_pairs_return_tradable, min_r=110, max_r=3000, min_corr=0.5)
@@ -61,7 +67,7 @@ plot_pair(sel_pairs_return_tradable[[pair_index]], time_index = index(get(sample
 plot(as.data.frame(df)[[sel_pairs_return_tradable[[pair_index]]$stock_1]] + sel_pairs_return_tradable[[pair_index]]$coeff[2]*as.data.frame(df)[[sel_pairs_return_tradable[[pair_index]]$stock_2]], type="l")
 
 ########################### tradable triples
-pair_index <- 1
+pair_index <- 296
 plot_triple(sel_triples_return[[pair_index]], time_index = index(get(sample(working_set, 1))))
 plot(as.data.frame(df)[[sel_triples_return[[pair_index]]$stock_1]] + 
        sel_triples_return[[pair_index]]$coeff[2]*as.data.frame(df)[[sel_triples_return[[pair_index]]$stock_2]] + 
@@ -87,7 +93,7 @@ plot(as.data.frame(df)[[found_pair$stock_1]] + found_pair$coeff[2]*as.data.frame
 found_pair <- find_by_name(pairs = pairs, stock_1 = "SPK.AX.Close", stock_2 = "WOW.AX.Close")
 is.null(found_pair)
 plot_pair(found_pair, time_index = index(get(sample(working_set, 1))))
-plot(as.data.frame(df)[[found_pair$stock_1]] + found_pair$coeff[2]*as.data.frame(df)[[found_pair$stock_2]], type="l")
+plot(as.data.frame(df)[["WOW.AX.Close"]] - 9.87*as.data.frame(df)[["SPK.AX.Close"]], type="l")
 
 found_pair <- find_by_name(pairs = pairs, stock_1 = "TPG.AX.Close", stock_2 = "FLT.AX.Close")
 is.null(found_pair)

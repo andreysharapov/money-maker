@@ -47,11 +47,23 @@ find_pairs <- function(df, period = 360, num_vars = 2, type="eigen", ecdet="none
           v = sd(series, na.rm=TRUE)
           # check we it is outside of num_vars standard deviations. If so, it is worth trading
           tradable = 0
-          if((series[length(series)] > m + num_vars*v) || (series[length(series)] < m - num_vars*v)) {
-            tradable = 1
-          }
           hl <- find_half_life(series)
-          cost <- total_cost_pair(hl = hl, price_1 = price_1, price_2 = price_2, coeff_1 = 1, coeff_2 = johtest@V[2,1], volume = volume)
+          if((series[length(series)] < m - num_vars*v)) {
+            tradable = 1
+            cost <- total_cost_pair(hl = hl, price_1 = price_1, price_2 = price_2, coeff_1 = 1, coeff_2 = johtest@V[2,1], volume = volume, below = TRUE)
+          } else if((series[length(series)] > m + num_vars*v)) {
+            tradable = 1
+            cost <- total_cost_pair(hl = hl, price_1 = price_1, price_2 = price_2, coeff_1 = 1, coeff_2 = johtest@V[2,1], volume = volume, below = FALSE)
+          } else {
+            if((series[length(series)] < m)) {
+              cost <- total_cost_pair(hl = hl, price_1 = price_1, price_2 = price_2, coeff_1 = 1, coeff_2 = johtest@V[2,1], volume = volume, below = TRUE)
+            } else if((series[length(series)] > m)) {
+              cost <- total_cost_pair(hl = hl, price_1 = price_1, price_2 = price_2, coeff_1 = 1, coeff_2 = johtest@V[2,1], volume = volume, below = FALSE)
+            } else {
+              throw("Unknown")
+            }
+          }
+          
           margin <- margin_pair(price_1 = price_1, price_2 = price_2, coeff_1 = 1, coeff_2 = johtest@V[2,1], volume = volume)
           pairs[[counter]] <- list(stock_1 = stocks[i], stock_2 = stocks[j], series = series, upper = m + num_vars*v, 
                                    lower = m - num_vars*v, coeff = johtest@V[1:2,1], correl = (cor(data_inp)), hl = hl, 
@@ -95,11 +107,15 @@ margin_pair <- function(price_1, price_2, coeff_1, coeff_2, volume = 100) {
   return(margin)
 }
 
-funding_pair <- function(hl, price_1, price_2, coeff_1, coeff_2, volume = 100) {
-  volume_1 <- abs(coeff_1) * volume
-  volume_2 <- abs(coeff_2) * volume
+funding_pair <- function(hl, price_1, price_2, coeff_1, coeff_2, volume = 100, below = TRUE) {
+  volume_1 <- coeff_1 * volume
+  volume_2 <- coeff_2 * volume
   funding <- price_1*volume_1*bbsw*hl/360 + price_2*volume_2*bbsw*hl/360
-  return(funding)
+  if(below) {
+    return(funding) 
+  } else {
+    return(-funding)
+  }
 }
 
 commission_pair <- function(price_1, price_2, coeff_1, coeff_2, volume = 100) {
@@ -109,7 +125,7 @@ commission_pair <- function(price_1, price_2, coeff_1, coeff_2, volume = 100) {
   return(commission)
 }
 
-total_cost_pair <- function(hl, price_1, price_2, coeff_1, coeff_2, volume = 100) {
-  cost <- funding_pair(hl, price_1, price_2, coeff_1, coeff_2, volume) + commission_pair(price_1, price_2, coeff_1, coeff_2, volume)
+total_cost_pair <- function(hl, price_1, price_2, coeff_1, coeff_2, volume = 100, below = TRUE) {
+  cost <- funding_pair(hl, price_1, price_2, coeff_1, coeff_2, volume, below) + commission_pair(price_1, price_2, coeff_1, coeff_2, volume)
   return(cost)
 }

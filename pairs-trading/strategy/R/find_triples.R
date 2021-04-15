@@ -51,12 +51,27 @@ find_triples <- function(df, period = 360, num_vars = 2, type="eigen", ecdet="no
             v = sd(series, na.rm=TRUE)
             # check we it is outside of num_vars standard deviations. If so, it is worth trading
             tradable = 0
-            if((series[length(series)] > m + num_vars*v) || (series[length(series)] < m - num_vars*v)) {
-              tradable = 1
-            }
             hl <- find_half_life(series)
-            cost <- total_cost_triple(hl = hl, price_1 = price_1, price_2 = price_2, price_3 = price_3, 
-                                      coeff_1 = 1, coeff_2 = johtest@V[2,1], coeff_3 = johtest@V[3,1], volume = volume)
+            if((series[length(series)] < m - num_vars*v)) {
+              tradable = 1
+              cost <- total_cost_triple(hl = hl, price_1 = price_1, price_2 = price_2, price_3 = price_3, 
+                                        coeff_1 = 1, coeff_2 = johtest@V[2,1], coeff_3 = johtest@V[3,1], volume = volume, below = TRUE)
+            } else if((series[length(series)] > m + num_vars*v)) {
+              tradable = 1
+              cost <- total_cost_triple(hl = hl, price_1 = price_1, price_2 = price_2, price_3 = price_3, 
+                                        coeff_1 = 1, coeff_2 = johtest@V[2,1], coeff_3 = johtest@V[3,1], volume = volume, below = FALSE)
+            } else {
+              if((series[length(series)] < m)) {
+                cost <- total_cost_triple(hl = hl, price_1 = price_1, price_2 = price_2, price_3 = price_3, 
+                                          coeff_1 = 1, coeff_2 = johtest@V[2,1], coeff_3 = johtest@V[3,1], volume = volume, below = TRUE)
+              } else if((series[length(series)] > m)) {
+                cost <- total_cost_triple(hl = hl, price_1 = price_1, price_2 = price_2, price_3 = price_3, 
+                                          coeff_1 = 1, coeff_2 = johtest@V[2,1], coeff_3 = johtest@V[3,1], volume = volume, below = FALSE)
+              } else {
+                throw("Unknown")
+              }
+            }
+            
             margin <- margin_triple(price_1 = price_1, price_2 = price_2, price_3 = price_3, 
                                     coeff_1 = 1, coeff_2 = johtest@V[2,1], coeff_3 = johtest@V[3,1], volume = volume)
             pairs[[counter]] <- list(stock_1 = stocks[i], stock_2 = stocks[j], stock_3 = stocks[k], series = series, upper = m + num_vars*v, 
@@ -112,12 +127,16 @@ margin_triple <- function(price_1, price_2, price_3, coeff_1, coeff_2, coeff_3, 
   return(margin)
 }
 
-funding_triple <- function(hl, price_1, price_2, price_3, coeff_1, coeff_2, coeff_3, volume = 100) {
-  volume_1 <- abs(coeff_1) * volume
-  volume_2 <- abs(coeff_2) * volume
-  volume_3 <- abs(coeff_3) * volume
+funding_triple <- function(hl, price_1, price_2, price_3, coeff_1, coeff_2, coeff_3, volume = 100, below = TRUE) {
+  volume_1 <- coeff_1 * volume
+  volume_2 <- coeff_2 * volume
+  volume_3 <- coeff_3 * volume
   funding <- price_1*volume_1*bbsw*hl/360 + price_2*volume_2*bbsw*hl/360 + price_3*volume_3*bbsw*hl/360
-  return(funding)
+  if(below) {
+    return(funding) 
+  } else {
+    return(-funding)
+  }
 }
 
 commission_triple <- function(price_1, price_2, price_3, coeff_1, coeff_2, coeff_3, volume = 100) {
@@ -128,8 +147,8 @@ commission_triple <- function(price_1, price_2, price_3, coeff_1, coeff_2, coeff
   return(commission)
 }
 
-total_cost_triple <- function(hl, price_1, price_2, price_3, coeff_1, coeff_2, coeff_3, volume = 100) {
-  cost <- funding_triple(hl, price_1, price_2, price_3, coeff_1, coeff_2, coeff_3, volume) + 
+total_cost_triple <- function(hl, price_1, price_2, price_3, coeff_1, coeff_2, coeff_3, volume = 100, below = TRUE) {
+  cost <- funding_triple(hl, price_1, price_2, price_3, coeff_1, coeff_2, coeff_3, volume, below) + 
     commission_triple(price_1, price_2, price_3, coeff_1, coeff_2, coeff_3, volume)
   return(cost)
 }

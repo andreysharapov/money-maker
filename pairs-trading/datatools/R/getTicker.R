@@ -92,6 +92,7 @@ refetch_bad_tickers <- function(working_set) {
   return(bad_tickers)
 }
 
+
 find_by_name <- function(pairs, stock_1, stock_2) {
   for(pair in pairs) {
     if((pair$stock_1 == stock_1 && pair$stock_2 == stock_2) || (pair$stock_1 == stock_2 && pair$stock_2 == stock_1)) {

@@ -145,7 +145,7 @@ prepare_backtest_result <- function(pairs, min_r=110, max_r=300, min_corr=0.7) {
   
 }
 
-prepare_backtest_triple_result <- function(triples, min_r=110, max_r=300) {
+prepare_backtest_triple_result <- function(triples, min_r=110, max_r=300, min_profit = 100, failed = 20) {
   
   counter <- 1
   pair_returns <- list()
@@ -190,6 +190,8 @@ prepare_backtest_triple_result <- function(triples, min_r=110, max_r=300) {
   returns_failed <- data.frame(pair_returns = pair_returns, perc_failed = perc_failed, triple_profit = triple_profit, triple_hl = triple_hl, triple_margin = triple_margin)
   row.names(returns_failed) <- NULL
   
-  return(returns_failed[((returns_failed$pair_returns > min_r) & (returns_failed$pair_returns < max_r)),])
+  return(returns_failed[((returns_failed$pair_returns > min_r) & 
+                           (returns_failed$pair_returns < max_r) & 
+                           (returns_failed$triple_profit > min_profit) & (returns_failed$perc_failed < failed)),])
   
 }
