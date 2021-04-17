@@ -88,7 +88,7 @@ backtest <- function(pairs, order.by, period, confidence, backtest_type) {
 }
 
 
-prepare_backtest_result <- function(pairs, min_r=110, max_r=300, min_corr=0.7) {
+prepare_backtest_result <- function(pairs, min_r=110, max_r=300, min_profit = 100, failed = 20, min_hl = 7, max_hl = 14) {
   
   counter <- 1
   pair_returns <- list()
@@ -138,14 +138,19 @@ prepare_backtest_result <- function(pairs, min_r=110, max_r=300, min_corr=0.7) {
   }
   pair_margin <- unlist(pair_margin, use.names = FALSE)
   
-  returns_failed <- data.frame(pair_returns = pair_returns, perc_failed = perc_failed, correl = correl, pair_profit = pair_profit, pair_hl = pair_hl, pair_margin = pair_margin)
+  returns_failed <- data.frame(pair_returns = pair_returns, perc_failed = perc_failed, pair_profit = pair_profit, pair_hl = pair_hl, pair_margin = pair_margin)
   row.names(returns_failed) <- NULL
   
-  return(returns_failed[((returns_failed$pair_returns > min_r) & (abs(returns_failed$correl) > min_corr) & (returns_failed$pair_returns < max_r)),])
+  return(returns_failed[((returns_failed$pair_returns > min_r) & 
+                           (returns_failed$pair_returns < max_r) & 
+                           (returns_failed$perc_failed < failed) & 
+                           (returns_failed$pair_profit > min_profit) & 
+                           (returns_failed$pair_hl > min_hl) & 
+                           (returns_failed$pair_hl < max_hl)),])
   
 }
 
-prepare_backtest_triple_result <- function(triples, min_r=110, max_r=300, min_profit = 100, failed = 20) {
+prepare_backtest_triple_result <- function(triples, min_r=110, max_r=300, min_profit = 100, failed = 20, min_hl= 7, max_hl = 21) {
   
   counter <- 1
   pair_returns <- list()
@@ -192,6 +197,9 @@ prepare_backtest_triple_result <- function(triples, min_r=110, max_r=300, min_pr
   
   return(returns_failed[((returns_failed$pair_returns > min_r) & 
                            (returns_failed$pair_returns < max_r) & 
-                           (returns_failed$triple_profit > min_profit) & (returns_failed$perc_failed < failed)),])
+                           (returns_failed$triple_profit > min_profit) & 
+                           (returns_failed$perc_failed < failed) & 
+                           (returns_failed$triple_hl > min_hl) & 
+                           (returns_failed$triple_hl < max_hl)),])
   
 }
