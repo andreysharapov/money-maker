@@ -153,5 +153,80 @@ total_cost_triple <- function(hl, price_1, price_2, price_3, coeff_1, coeff_2, c
   return(cost)
 }
 
+buy_triple <- function(triple) {
+  con <- mongo(collection = "triples", db = "strategy")
+  loc_triple <- list(stock_1 = triple$stock_1, stock_2 = triple$stock_2, stock_3 = triple$stock_3, upper = triple$upper, lower = triple$lower, coeff = triple$coeff, 
+                   hl = triple$hl, profit = triple$profit, cost = triple$cost, margin = triple$margin, return = as.numeric(triple$jo_returns$lcr), 
+                   failed = triple$jo_returns$percent_failed, buy_date = Sys.Date(), status = 1)
+  con$insert(loc_triple)
+}
 
+find_all_triple <- function(status = 1) {
+  con <- mongo(collection = "triples", db = "strategy")
+  query <- paste0("{\"status\" : ", status,"}")
+  return(con$find(query))
+}
+
+find_triple <- function(stock_1, stock_2, stock_3, status = 1) {
+  con <- mongo(collection = "triples", db = "strategy")
+  query <- paste0("{\"stock_1\" : \"", stock_1, "\", \"stock_2\" : \"", stock_2, "\", \"stock_3\" : \"", stock_3, "\", \"status\" : ", status,"}")
+  loc_triple <- con$find(query)
+  if(nrow(loc_triple) > 1) {
+    print(loc_triple)
+    throw("Multiple pairs found")
+  }
+  
+  if(nrow(loc_triple) == 0) {
+    throw("Nothing found")
+  }
+  
+  return(list(stock_1 = loc_triple$stock_1[[1]], 
+              stock_2 = loc_triple$stock_2[[1]], 
+              stock_3 = loc_triple$stock_3[[1]], 
+              upper =   loc_triple$upper[[1]], 
+              lower =   loc_triple$lower[[1]], 
+              coeff =   loc_triple$coeff[[1]], 
+              hl =      loc_triple$hl[[1]], 
+              profit =  loc_triple$profit[[1]], 
+              cost =    loc_triple$cost[[1]], 
+              margin =  loc_triple$margin[[1]], 
+              return =  loc_triple$return[[1]], 
+              failed =  loc_triple$failed[[1]], 
+              buy_date =loc_triple$buy_date[[1]], 
+              status =  loc_triple$status[[1]]))
+}
+
+sell_triple <- function(triple) {
+  con <- mongo(collection = "triples", db = "strategy")
+  stock_1 <- triple$stock_1
+  stock_2 <- triple$stock_2
+  stock_3 <- triple$stock_3
+  status <- triple$status
+  query_1 <- paste0("{\"stock_1\" : \"", stock_1, "\", \"stock_2\" : \"", stock_2, "\", \"stock_3\" : \"", stock_3, "\",\"status\" : ", status,"}")
+  query_2 <- paste0("{\"$set\":{\"status\":", 0, "}}")
+  con$update(query_1, query_2)
+}
+
+remove_triples <- function()  {
+  con <- mongo(collection = "triples", db = "strategy")
+  con$remove('{}')
+}
+
+plot_bought_triple <- function(triple, period = 1000) {
+  
+  loc_triple <- triple
+  stock_1 <- paste0(str_split(triple$stock_1, "\\.")[[1]][1], '.', str_split(triple$stock_1, "\\.")[[1]][2])
+  stock_2 <- paste0(str_split(triple$stock_2, "\\.")[[1]][1], '.', str_split(triple$stock_2, "\\.")[[1]][2])
+  stock_3 <- paste0(str_split(triple$stock_3, "\\.")[[1]][1], '.', str_split(triple$stock_3, "\\.")[[1]][2])
+  
+  start_date <- Sys.Date() - period
+  s_1 <- getSymbols(stock_1, from = start_date, auto.assign = FALSE)
+  s_2 <- getSymbols(stock_2, from = start_date, auto.assign = FALSE)
+  s_3 <- getSymbols(stock_3, from = start_date, auto.assign = FALSE)
+  
+  spread <- as.numeric(triple$coeff[1]) * s_1[, loc_triple$stock_1] + as.numeric(triple$coeff[2]) * s_2[, loc_triple$stock_2] + as.numeric(triple$coeff[3]) * s_3[, loc_triple$stock_3]
+  names(spread) <- "series"
+  loc_triple$series <- spread
+  plot_triple(pair=loc_triple, time_index = index(s_1), add_cut = TRUE, cut_date = as.Date(loc_triple$buy_date))
+}
 

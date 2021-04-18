@@ -59,14 +59,23 @@ if(!(any(is.na(df) | is.infinite(df) | is.null(df)))) {
   print("ERROR")
 }
 
-con <- mongo(collection = "pairs", db = "strategy")
-buy_pair(con, sel_pairs_return[[64]])
-buy_pair(con, sel_pairs_return[[8]])
+buy_pair(sel_pairs_return[[64]])
+buy_pair(sel_pairs_return[[8]])
 
-found_pairs <- find_all_pair(con)
-found_pair <- find_pair(con, "VTS.AX.Close", "RMC.AX.Close")
+found_pairs <- find_all_pair()
+found_pair <- find_pair("VTS.AX.Close", "RMC.AX.Close")
 plot_bought_pair(found_pair)
-sell_pair(con, found_pair)
+sell_pair(found_pair)
+remove_pairs()
+
+buy_triple(sel_triples_return[[5136]])
+buy_triple(sel_triples_return[[3714]])
+
+found_triples <- find_all_triple()
+found_triple <- find_triple("HUB.AX.Close", "CUV.AX.Close", "CQE.AX.Close")
+plot_bought_triple(found_triple)
+sell_triple(found_triple)
+remove_triples()
 
 ########################### tradable pairs
 pair_index <- 64
@@ -74,7 +83,7 @@ plot_pair(sel_pairs_return[[pair_index]], time_index = index(get(sample(working_
 plot(as.data.frame(df)[[sel_pairs_return[[pair_index]]$stock_1]] + sel_pairs_return[[pair_index]]$coeff[2]*as.data.frame(df)[[sel_pairs_return[[pair_index]]$stock_2]], type="l")
 
 ########################### tradable triples
-pair_index <- 63
+pair_index <- 5136
 plot_triple(sel_triples_return[[pair_index]], time_index = index(get(sample(working_set, 1))))
 plot(as.data.frame(df)[[sel_triples_return[[pair_index]]$stock_1]] + 
        sel_triples_return[[pair_index]]$coeff[2]*as.data.frame(df)[[sel_triples_return[[pair_index]]$stock_2]] + 

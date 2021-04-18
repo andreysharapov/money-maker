@@ -78,11 +78,8 @@ find_pairs <- function(df, period = 360, num_vars = 2, type="eigen", ecdet="none
 }
 
 plot_pair <- function(pair, time_index = NULL, add_cut = FALSE, cut_date = Sys.Date()) {
-  if(!is.null(time_index)) {
-    ts <- as.xts(x = data.frame(series=pair$series), order.by = time_index[(length(time_index) - length(pair$series) + 1):length(time_index)])
-  } else {
-    ts <- as.xts(x = data.frame(series=pair$series))
-  } 
+
+  ts <- as.xts(x = data.frame(series=pair$series), order.by = time_index[(length(time_index) - length(pair$series) + 1):length(time_index)])
   
   g <- ggplot(ts, aes(x = Index, y = series)) + 
           geom_line() + 
@@ -135,24 +132,31 @@ total_cost_pair <- function(hl, price_1, price_2, coeff_1, coeff_2, volume = 100
   return(cost)
 }
 
-buy_pair <- function(con, pair) {
+buy_pair <- function(pair) {
+  con <- mongo(collection = "pairs", db = "strategy")
   loc_pair <- list(stock_1 = pair$stock_1, stock_2 = pair$stock_2, upper = pair$upper, lower = pair$lower, coeff = pair$coeff, 
                    hl = pair$hl, profit = pair$profit, cost = pair$cost, margin = pair$margin, return = as.numeric(pair$jo_returns$lcr), 
                    failed = pair$jo_returns$percent_failed, buy_date = Sys.Date(), status = 1)
   con$insert(loc_pair)
 }
 
-find_all_pair <- function(con, status = 1) {
+find_all_pair <- function(status = 1) {
+  con <- mongo(collection = "pairs", db = "strategy")
   query <- paste0("{\"status\" : ", status,"}")
   return(con$find(query))
 }
 
-find_pair <- function(con, stock_1, stock_2, status = 1) {
+find_pair <- function(stock_1, stock_2, status = 1) {
+  con <- mongo(collection = "pairs", db = "strategy")
   query <- paste0("{\"stock_1\" : \"", stock_1, "\", \"stock_2\" : \"", stock_2, "\", \"status\" : ", status,"}")
   loc_pair <- con$find(query)
   if(nrow(loc_pair) > 1) {
     print(loc_pair)
     throw("Multiple pairs found")
+  }
+  
+  if(nrow(loc_pair) == 0) {
+    throw("Nothing found")
   }
   
   return(list(stock_1 = loc_pair$stock_1[[1]], 
@@ -170,7 +174,8 @@ find_pair <- function(con, stock_1, stock_2, status = 1) {
               status =  loc_pair$status[[1]]))
 }
 
-sell_pair <- function(con, pair) {
+sell_pair <- function(pair) {
+  con <- mongo(collection = "pairs", db = "strategy")
   stock_1 <- pair$stock_1
   stock_2 <- pair$stock_2
   status <- pair$status
@@ -179,12 +184,13 @@ sell_pair <- function(con, pair) {
   con$update(query_1, query_2)
 }
 
-remove_pairs <- function(con)  {
+remove_pairs <- function()  {
+  con <- mongo(collection = "pairs", db = "strategy")
   con$remove('{}')
 }
 
-plot_bought_pair <- function(pair, period = 500) {
-  
+plot_bought_pair <- function(pair, period = 1000) {
+
   loc_pair <- pair
   stock_1 <- paste0(str_split(pair$stock_1, "\\.")[[1]][1], '.', str_split(pair$stock_1, "\\.")[[1]][2])
   stock_2 <- paste0(str_split(pair$stock_2, "\\.")[[1]][1], '.', str_split(pair$stock_2, "\\.")[[1]][2])
