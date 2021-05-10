@@ -76,7 +76,7 @@ find_triples <- function(df, period = 360, num_vars = 2, type="eigen", ecdet="no
                                     coeff_1 = 1, coeff_2 = johtest@V[2,1], coeff_3 = johtest@V[3,1], volume = volume)
             pairs[[counter]] <- list(stock_1 = stocks[i], stock_2 = stocks[j], stock_3 = stocks[k], series = series, upper = m + num_vars*v, 
                                      lower = m - num_vars*v, coeff = johtest@V[1:3,1], correl = (cor(data_inp)), hl = hl, 
-                                     profit = volume*num_vars*v - cost, tradable=tradable, cost = cost, margin = margin)
+                                     profit = volume*num_vars*v, tradable=tradable, cost = cost, margin = margin)
             counter <- counter + 1
           }
         }
@@ -230,3 +230,61 @@ plot_bought_triple <- function(triple, period = 1000) {
   plot_triple(pair=loc_triple, time_index = index(s_1), add_cut = TRUE, cut_date = as.Date(loc_triple$buy_date))
 }
 
+buy_triple_test <- function(triple) {
+  con <- mongo(collection = "test_triples", db = "strategy")
+  loc_triple <- list(stock_1 = triple$stock_1, stock_2 = triple$stock_2, stock_3 = triple$stock_3, upper = triple$upper, lower = triple$lower, coeff = triple$coeff, 
+                     hl = triple$hl, profit = triple$profit, cost = triple$cost, margin = triple$margin, return = as.numeric(triple$jo_returns$lcr), 
+                     failed = triple$jo_returns$percent_failed, buy_date = Sys.Date(), status = 1)
+  con$insert(loc_triple)
+}
+
+find_all_triple_test <- function(status = 1) {
+  con <- mongo(collection = "test_triples", db = "strategy")
+  query <- paste0("{\"status\" : ", status,"}")
+  return(con$find(query))
+}
+
+find_triple_test <- function(stock_1, stock_2, stock_3, status = 1) {
+  con <- mongo(collection = "test_triples", db = "strategy")
+  query <- paste0("{\"stock_1\" : \"", stock_1, "\", \"stock_2\" : \"", stock_2, "\", \"stock_3\" : \"", stock_3, "\", \"status\" : ", status,"}")
+  loc_triple <- con$find(query)
+  if(nrow(loc_triple) > 1) {
+    print(loc_triple)
+    throw("Multiple pairs found")
+  }
+  
+  if(nrow(loc_triple) == 0) {
+    throw("Nothing found")
+  }
+  
+  return(list(stock_1 = loc_triple$stock_1[[1]], 
+              stock_2 = loc_triple$stock_2[[1]], 
+              stock_3 = loc_triple$stock_3[[1]], 
+              upper =   loc_triple$upper[[1]], 
+              lower =   loc_triple$lower[[1]], 
+              coeff =   loc_triple$coeff[[1]], 
+              hl =      loc_triple$hl[[1]], 
+              profit =  loc_triple$profit[[1]], 
+              cost =    loc_triple$cost[[1]], 
+              margin =  loc_triple$margin[[1]], 
+              return =  loc_triple$return[[1]], 
+              failed =  loc_triple$failed[[1]], 
+              buy_date =loc_triple$buy_date[[1]], 
+              status =  loc_triple$status[[1]]))
+}
+
+sell_triple_test <- function(triple) {
+  con <- mongo(collection = "test_triples", db = "strategy")
+  stock_1 <- triple$stock_1
+  stock_2 <- triple$stock_2
+  stock_3 <- triple$stock_3
+  status <- triple$status
+  query_1 <- paste0("{\"stock_1\" : \"", stock_1, "\", \"stock_2\" : \"", stock_2, "\", \"stock_3\" : \"", stock_3, "\",\"status\" : ", status,"}")
+  query_2 <- paste0("{\"$set\":{\"status\":", 0, "}}")
+  con$update(query_1, query_2)
+}
+
+remove_triples_test <- function()  {
+  con <- mongo(collection = "test_triples", db = "strategy")
+  con$remove('{}')
+}

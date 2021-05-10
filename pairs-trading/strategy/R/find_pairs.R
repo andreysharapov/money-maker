@@ -67,7 +67,7 @@ find_pairs <- function(df, period = 360, num_vars = 2, type="eigen", ecdet="none
           margin <- margin_pair(price_1 = price_1, price_2 = price_2, coeff_1 = 1, coeff_2 = johtest@V[2,1], volume = volume)
           pairs[[counter]] <- list(stock_1 = stocks[i], stock_2 = stocks[j], series = series, upper = m + num_vars*v, 
                                    lower = m - num_vars*v, coeff = johtest@V[1:2,1], correl = (cor(data_inp)), hl = hl, 
-                                   profit = volume*num_vars*v - cost, tradable=tradable, cost = cost, margin = margin)
+                                   profit = volume*num_vars*v, tradable=tradable, cost = cost, margin = margin)
           counter <- counter + 1
         }
       }
@@ -97,7 +97,7 @@ plot_pair <- function(pair, time_index = NULL, add_cut = FALSE, cut_date = Sys.D
   }
   
   if(add_cut) {
-    g <- g + geom_vline(xintercept=as.Date("2021-04-17"), color = "red")
+    g <- g + geom_vline(xintercept=cut_date, color = "red")
   }
   print(g)
 }
